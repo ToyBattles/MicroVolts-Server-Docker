@@ -34,6 +34,6 @@ That's it! Your Microvolts Emulator is now running with:
 
 ## Support & Community
 
-- 📖 **[Full Documentation](docs/)** - Complete guides and references
-- 🐛 [Discord Server](https://discord.gg/y6yjRKmE6Y) - Bug reports and feature requests
+- **[Full Documentation](docs/)** - Complete guides and references
+-  [Discord Server](https://discord.gg/y6yjRKmE6Y) - Bug reports and feature requests
 ---
