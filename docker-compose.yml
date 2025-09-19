@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb:10.11
+    container_name: microvolts-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MV_DB_PW:-default_password}
+      MYSQL_DATABASE: microvolts-db
+      MYSQL_USER: microvolts
+      MYSQL_PASSWORD: ${MV_DB_PW:-default_password}
+    ports:
+      - "3305:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./microvolts-db.sql:/docker-entrypoint-initdb.d/microvolts-db.sql
+    networks:
+      - microvolts-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  auth-server:
+    build: .
+    container_name: microvolts-auth
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "13000:13000"
+    volumes:
+      - ./Setup:/app/Setup:ro
+    networks:
+      - microvolts-network
+    command: ["/app/Output/AuthServer.elf"]
+
+  main-server:
+    build: .
+    container_name: microvolts-main
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "13005:13005"
+      - "14005:14005"
+    volumes:
+      - ./Setup:/app/Setup:ro
+    networks:
+      - microvolts-network
+    command: ["/app/Output/MainServer.elf"]
+
+  cast-server:
+    build: .
+    container_name: microvolts-cast
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "13006:13006"
+      - "14006:14006"
+    volumes:
+      - ./Setup:/app/Setup:ro
+    networks:
+      - microvolts-network
+    command: ["/app/Output/CastServer.elf"]
+
+volumes:
+  db_data:
+
+networks:
+  microvolts-network:
+    driver: bridge
