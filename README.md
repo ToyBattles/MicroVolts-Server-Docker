@@ -2,7 +2,7 @@
 
 A complete Docker-based setup for running the Microvolts Emulator servers on Linux. This setup includes authentication, main game, and gameplay servers with automatic database initialization.
 
-## 🚀 Quick Start
+## Quick Start
 
 Get the Microvolts Emulator running in minutes:
 
@@ -25,14 +25,14 @@ That's it! Your Microvolts Emulator is now running with:
 - ✅ Main game server (ports 13005, 14005)
 - ✅ Gameplay server (ports 13006, 14006)
 
-## 📋 Requirements
+## Requirements
 
 - **Docker** 20.10+ and **Docker Compose** 2.0+
 - **Linux** environment (Ubuntu/Debian recommended)
 - **4GB+ RAM** available
 - **Git** for repository access
 
-## 🆘 Support & Community
+## Support & Community
 
 - 📖 **[Full Documentation](docs/)** - Complete guides and references
 - 🐛 [Discord Server](https://discord.gg/y6yjRKmE6Y) - Bug reports and feature requests
