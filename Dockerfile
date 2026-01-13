@@ -5,6 +5,11 @@ RUN apt-get update && apt-get install -y \
     cmake \
     ninja-build \
     git \
+    curl \
+    ca-certificates \
+    zip \
+    unzip \
+    tar \
     python3 \
     python3-pip \
     pkg-config \
