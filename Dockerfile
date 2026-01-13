@@ -52,9 +52,10 @@ RUN cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=ExternalLibraries/vcpkg/scripts/b
     && test -f /app/Output/MainServer.elf \
     && test -f /app/Output/CastServer.elf
 
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 RUN apt-get update && apt-get install -y \
+    libstdc++6 \
     libssl3 \
     libmariadb3 \
     && rm -rf /var/lib/apt/lists/*
