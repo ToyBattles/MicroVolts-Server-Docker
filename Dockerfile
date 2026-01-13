@@ -41,10 +41,12 @@ RUN git clone https://github.com/microsoft/vcpkg.git ExternalLibraries/vcpkg \
 RUN ./ExternalLibraries/vcpkg/vcpkg install --triplet=x64-linux
 
 RUN cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=ExternalLibraries/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release \
-    && cmake --build build --config Release \
+    # Build all 3 server targets explicitly (default target may not build all)
+    && cmake --build build --config Release --target AuthServer MainServer CastServer \
     # Normalize build artifacts into a stable path for the runtime stage
     && mkdir -p /app/Output \
-    && find build -type f -name '*.elf' -exec cp -f {} /app/Output/ \; \
+    # Some upstream builds output to /app/*.elf (not under build/), so search both.
+    && find /app -maxdepth 3 -type f -name '*.elf' -exec cp -f {} /app/Output/ \; \
     # Fail early if expected server binaries were not produced
     && test -f /app/Output/AuthServer.elf \
     && test -f /app/Output/MainServer.elf \
