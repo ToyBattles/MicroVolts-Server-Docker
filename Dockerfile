@@ -16,6 +16,11 @@ RUN apt-get update && apt-get install -y \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Ubuntu 22.04 ships CMake 3.22.x, but the emulator requires CMake >= 3.26.
+# Install a newer CMake via pip (places `cmake` in /usr/local/bin).
+RUN python3 -m pip install --no-cache-dir "cmake>=3.26" \
+    && cmake --version
+
 RUN apt-get update && apt-get install -y software-properties-common \
     && add-apt-repository ppa:ubuntu-toolchain-r/test \
     && apt-get update \
