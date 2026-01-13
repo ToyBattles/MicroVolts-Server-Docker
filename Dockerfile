@@ -41,7 +41,14 @@ RUN git clone https://github.com/microsoft/vcpkg.git ExternalLibraries/vcpkg \
 RUN ./ExternalLibraries/vcpkg/vcpkg install --triplet=x64-linux
 
 RUN cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=ExternalLibraries/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_BUILD_TYPE=Release \
-    && cmake --build build --config Release
+    && cmake --build build --config Release \
+    # Normalize build artifacts into a stable path for the runtime stage
+    && mkdir -p /app/Output \
+    && find build -type f -name '*.elf' -exec cp -f {} /app/Output/ \; \
+    # Fail early if expected server binaries were not produced
+    && test -f /app/Output/AuthServer.elf \
+    && test -f /app/Output/MainServer.elf \
+    && test -f /app/Output/CastServer.elf
 
 FROM ubuntu:22.04
 
@@ -52,9 +59,7 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-COPY --from=builder /app/build/AuthServer/AuthServer.elf /app/Output/
-COPY --from=builder /app/build/MainServer/MainServer.elf /app/Output/
-COPY --from=builder /app/build/CastServer/CastServer.elf /app/Output/
+COPY --from=builder /app/Output/ /app/Output/
 
 COPY --from=builder /app/Setup/ /app/Setup/
 COPY --from=builder /app/microvolts-db.sql /app/
