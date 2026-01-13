@@ -46,8 +46,12 @@ COPY --from=builder /app/build/AuthServer/AuthServer.elf /app/Output/
 COPY --from=builder /app/build/MainServer/MainServer.elf /app/Output/
 COPY --from=builder /app/build/CastServer/CastServer.elf /app/Output/
 
-COPY Setup/ /app/Setup/
-COPY microvolts-db.sql /app/
+COPY --from=builder /app/Setup/ /app/Setup/
+COPY --from=builder /app/microvolts-db.sql /app/
+
+# Runtime entrypoint patches config.ini based on environment variables.
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
 
 RUN mkdir -p /app/Output
 
@@ -55,4 +59,5 @@ ENV MV_DB_PW=default_password
 
 EXPOSE 13000 13005 13006
 
+ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["/bin/bash"]

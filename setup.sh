@@ -1,17 +1,22 @@
 #!/bin/bash
 
 # Setup script for Microvolts Emulator Docker
-# Configures database settings and creates docker-compose override
+# Generates docker-compose override to configure DB + server containers via env.
 
-CONFIG_FILE="./Setup/config.ini"
 OVERRIDE_FILE="docker-compose.override.yml"
 
-# Default values
-DB_HOST="127.0.0.1"
-DB_PORT="3305"
+# Default values (for docker compose internal networking)
+DB_HOST="db"
+
+# Host-exposed DB port (internal MariaDB port is always 3306)
+DB_HOST_PORT="3305"
+
 DB_NAME="microvolts-db"
-DB_USER="root"
-DB_PASSWORD_ENV="MV_DB_PASSWORD"
+DB_USER="microvolts"
+
+# Name of the environment variable that will hold the DB password value.
+# This repo defaults to MV_DB_PW (see docker-compose.yml).
+DB_PASSWORD_ENV="MV_DB_PW"
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -21,7 +26,7 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     --db-port)
-      DB_PORT="$2"
+      DB_HOST_PORT="$2"
       shift 2
       ;;
     --db-name)
@@ -39,11 +44,11 @@ while [[ $# -gt 0 ]]; do
     --help)
       echo "Usage: $0 [options]"
       echo "Options:"
-      echo "  --db-host HOST          Database host IP (default: 127.0.0.1)"
-      echo "  --db-port PORT          Database port (default: 3305)"
+      echo "  --db-host HOST          Database host (default: db)"
+      echo "  --db-port PORT          Database host-exposed port (default: 3305)"
       echo "  --db-name NAME          Database name (default: microvolts-db)"
-      echo "  --db-user USER          Database user (default: root)"
-      echo "  --db-password-env ENV   Environment variable name for password (default: MV_DB_PASSWORD)"
+      echo "  --db-user USER          Database user (default: microvolts)"
+      echo "  --db-password-env ENV   Environment variable name for password (default: MV_DB_PW)"
       echo "  --help                  Show this help"
       exit 0
       ;;
@@ -55,28 +60,13 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Check if config file exists
-if [ ! -f "$CONFIG_FILE" ]; then
-    echo "Error: Configuration file $CONFIG_FILE not found!"
-    exit 1
-fi
-
 echo "Updating configuration with:"
 echo "  DB Host: $DB_HOST"
-echo "  DB Port: $DB_PORT"
+echo "  DB Host Port: $DB_HOST_PORT"
 echo "  DB Name: $DB_NAME"
 echo "  DB User: $DB_USER"
 echo "  DB Password Env: $DB_PASSWORD_ENV"
 echo ""
-
-# Update config.ini
-sed -i "s|^Ip = .*|Ip = $DB_HOST|" "$CONFIG_FILE"
-sed -i "s|^Port = .*|Port = $DB_PORT|" "$CONFIG_FILE"
-sed -i "s|^DatabaseName = .*|DatabaseName = $DB_NAME|" "$CONFIG_FILE"
-sed -i "s|^Username = .*|Username = $DB_USER|" "$CONFIG_FILE"
-sed -i "s|^PasswordEnvironmentName = .*|PasswordEnvironmentName = $DB_PASSWORD_ENV|" "$CONFIG_FILE"
-
-echo "Configuration updated successfully!"
 
 # Create docker-compose.override.yml
 cat > "$OVERRIDE_FILE" << EOF
@@ -90,19 +80,34 @@ services:
       MYSQL_USER: $DB_USER
       MYSQL_PASSWORD: \${$DB_PASSWORD_ENV}
     ports:
-      - "$DB_PORT:3306"
+      - "$DB_HOST_PORT:3306"
 
   auth-server:
     environment:
       - $DB_PASSWORD_ENV
+      - MV_DB_PASSWORD_ENV=$DB_PASSWORD_ENV
+      - MV_DB_HOST=$DB_HOST
+      - MV_DB_PORT=3306
+      - MV_DB_NAME=$DB_NAME
+      - MV_DB_USER=$DB_USER
 
   main-server:
     environment:
       - $DB_PASSWORD_ENV
+      - MV_DB_PASSWORD_ENV=$DB_PASSWORD_ENV
+      - MV_DB_HOST=$DB_HOST
+      - MV_DB_PORT=3306
+      - MV_DB_NAME=$DB_NAME
+      - MV_DB_USER=$DB_USER
 
   cast-server:
     environment:
       - $DB_PASSWORD_ENV
+      - MV_DB_PASSWORD_ENV=$DB_PASSWORD_ENV
+      - MV_DB_HOST=$DB_HOST
+      - MV_DB_PORT=3306
+      - MV_DB_NAME=$DB_NAME
+      - MV_DB_USER=$DB_USER
 EOF
 
 echo "Docker Compose override file created: $OVERRIDE_FILE"
@@ -110,6 +115,6 @@ echo ""
 echo "Next steps:"
 echo "1. Set your database password environment variable:"
 echo "   export $DB_PASSWORD_ENV=your_actual_password"
-echo "2. Run: docker-compose up --build -d"
+echo "2. Run: docker compose up --build -d"
 echo ""
-echo "Note: Make sure the password environment variable is set before running docker-compose."
+echo "Note: Make sure the password environment variable is set before running docker compose."

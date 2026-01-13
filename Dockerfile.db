@@ -1,0 +1,12 @@
+FROM alpine/git AS src
+
+WORKDIR /src
+
+# Fetch the emulator repo to obtain the DB init SQL without requiring it in this repo.
+RUN git clone --depth 1 https://github.com/SoWeBegin/MicrovoltsEmulator.git .
+
+FROM mariadb:10.11
+
+# MariaDB will automatically run any *.sql files found in this directory on first startup.
+COPY --from=src /src/microvolts-db.sql /docker-entrypoint-initdb.d/microvolts-db.sql
+
