@@ -33,8 +33,8 @@ git --version
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/SoWeBegin/MicrovoltsEmulator.git
-cd MicrovoltsEmulator
+git clone https://github.com/ToyBattles/MicroVolts-Server-Docker.git
+cd MicroVolts-Server-Docker
 ```
 
 ### Step 2: Configure Database
