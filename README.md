@@ -7,8 +7,8 @@ A complete Docker-based setup for running the Microvolts Emulator servers on Lin
 Get the Microvolts Emulator running in minutes:
 
 ```bash
-git clone https://github.com/SoWeBegin/MicrovoltsEmulator.git
-cd MicrovoltsEmulator
+git clone https://github.com/ToyBattles/MicroVolts-Server-Docker.git
+cd MicroVolts-Server-Docker
 
 ./setup.sh --db-password-env MY_DB_PASSWORD
 
